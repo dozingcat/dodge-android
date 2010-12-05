@@ -1,6 +1,8 @@
 package com.dozingcatsoftware.dodge.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -27,7 +29,7 @@ public class Field {
 	
 	Random random = new Random();
 	
-	Set<Bullet> bullets;
+	Bullet[] bullets;
 	Dodger dodger;
 	boolean running = false;
 	boolean movingUp = true;
@@ -84,17 +86,31 @@ public class Field {
 		return bullet;
 	}
 	
+	List<Integer> bulletIndexesToRemove = new ArrayList<Integer>(); // avoid allocation in loop
 	/** Updates the position of the player and all bullets, handles collisions, and creates new bullets if
 	 * necessary.
+	 * Postcondition: this.bullets.length==maxBullets, and this.bullets has no null elements
 	 * @param dt time interval since the last update
 	 */
 	public void tick(double dt) {
-		Set<Bullet> bulletsToRemove = new HashSet<Bullet>();
+		bulletIndexesToRemove.clear();
 		
-		for(Bullet b : bullets) {
-			b.tick(dt);
-			if (b.shouldRemoveFromField(this)) {
-				bulletsToRemove.add(b);
+		if (this.bullets==null || this.bullets.length!=maxBullets) {
+			// allocate new array and copy existing bullets (this will truncate some bullets if current length>maxBullets)
+			Bullet[] newBullets = new Bullet[maxBullets];
+			if (this.bullets!=null) {
+				System.arraycopy(this.bullets, 0, newBullets, 0, Math.min(bullets.length, maxBullets));
+			}
+			this.bullets = newBullets;
+		}
+		
+		for(int i=0; i<maxBullets; i++) {
+			Bullet b = this.bullets[i];
+			if (b!=null) {
+				b.tick(dt);
+				if (b.shouldRemoveFromField(this)) {
+					bulletIndexesToRemove.add(i);
+				}
 			}
 		}
 		
@@ -110,10 +126,13 @@ public class Field {
 			// check for collision if player is outside of goal areas
 			if (dpos.y > this.goalHeight() && dpos.y < aspectRatio-this.goalHeight()) {
 				boolean hit = false;
-				for(Bullet b : bullets) {
-					if (dpos.squaredDistanceTo(b.getPosition()) < 0.025*0.025) {
-						hit = true;
-						bulletsToRemove.add(b);
+				for(int i=0; i<maxBullets; i++) {
+					Bullet b = this.bullets[i];
+					if (b!=null) {
+						if (dpos.squaredDistanceTo(b.getPosition()) < 0.025*0.025) {
+							hit = true;
+							bulletIndexesToRemove.add(i);
+						}
 					}
 				}
 				if (hit) {
@@ -124,10 +143,15 @@ public class Field {
 			}
 		}
 		
-		// add new bullets if existing bullets were removed due to collision with player or reaching the edge
-		bullets.removeAll(bulletsToRemove);
-		while(bullets.size() < maxBullets) {
-			bullets.add(newBullet());
+		// remove bullets at indexes to delete, and fill all null spots in bullets array
+		for(int i=0; i<bulletIndexesToRemove.size(); i++) {
+			this.bullets[bulletIndexesToRemove.get(i)] = null;
+		}
+		
+		for(int i=0; i<maxBullets; i++) {
+			if (this.bullets[i]==null) {
+				this.bullets[i] = newBullet();
+			}
 		}
 	}
 	
@@ -148,7 +172,7 @@ public class Field {
 	}
 	
 	public void start() {
-		bullets = new HashSet<Bullet>();
+		bullets = new Bullet[0];
 		running = true;
 	}
 	
@@ -175,11 +199,8 @@ public class Field {
 	public void setMaxBullets(int maxBullets) {
 		this.maxBullets = maxBullets;
 	}
-	public Set<Bullet> getBullets() {
+	public Bullet[] getBullets() {
 		return bullets;
-	}
-	public void setBullets(Set<Bullet> bullets) {
-		this.bullets = bullets;
 	}
 	public Dodger getDodger() {
 		return dodger;
