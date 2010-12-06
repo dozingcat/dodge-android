@@ -1,10 +1,8 @@
 package com.dozingcatsoftware.dodge.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /** Represents the field on which the player and bullets move. The field's width is always normalized to 1.0,
  * and the height will vary based on the aspect ratio of the field's view. The Field object contains a Dodger

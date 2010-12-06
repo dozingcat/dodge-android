@@ -146,6 +146,9 @@ public class DodgeMain extends Activity implements Field.Delegate {
     	
     	boolean tilt = prefs.getBoolean(DodgePreferences.TILT_CONTROL_KEY, true);
     	fieldView.setTiltControlEnabled(tilt);
+    	
+    	boolean showFPS = prefs.getBoolean(DodgePreferences.SHOW_FPS_KEY, false);
+    	fieldView.setShowFPS(showFPS);
 
     	Bitmap backgroundBitmap = null;
     	String backgroundImage = prefs.getString(DodgePreferences.IMAGE_URI_KEY, null);

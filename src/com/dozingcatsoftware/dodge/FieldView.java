@@ -16,9 +16,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -41,7 +38,6 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	SurfaceHolder surfaceHolder;
 	Handler messageHandler;
 
-	double updatesPerSecond = 30;
 	boolean running = false;
 	boolean canDraw = false;
 	boolean setupField = false;
@@ -62,9 +58,13 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	Bitmap unscaledBackgroundBitmap;
 	boolean flashingBullets = false;
 	boolean tiltControlEnabled = true;
+	boolean showFPS = false;
 	
 	OrientationListener orientationListener;
 	PowerManager powerManager;
+	
+	FrameRateManager frameRateManager = new FrameRateManager(new double[] {60, 50, 40, 30}, new double[] {58, 48, 38});
+	String debugText = null;
 
 	
 	// 10 and 5 pixels on Droid/Nexus with width=480, scaled down as needed for smaller displays
@@ -85,6 +85,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		endAreaPaint.setARGB(128, 0, 255, 0);
 		dodgerPaint = new Paint();
 		dodgerPaint.setARGB(255, 0, 0, 255);
+		dodgerPaint.setAntiAlias(true);
 		
 		setFocusable(true);
 		powerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
@@ -153,6 +154,9 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	public void setFlashingBullets(boolean value) {
 		flashingBullets = value;
 	}
+	public void setShowFPS(boolean value) {
+		showFPS = value;
+	}
 	
 	public void setTiltControlEnabled(boolean value) {
 		if (tiltControlEnabled!=value) {
@@ -193,6 +197,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 			gameThread.join();
 		}
 		catch(InterruptedException ex) {}
+		frameRateManager.clearTimestamps();
 	}
 	
 	void startOrientationListener() {
@@ -230,11 +235,15 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	 * drawField to redraw the view.
 	 */
 	void threadMain() {
-		double dt = 1/updatesPerSecond;
-		long millisPerUpdate = (long)(1000*dt);
-		
+		frameRateManager.setAllowLockingFrameRate(false);
 		while(running) {
-			long startTime = System.currentTimeMillis();
+			double dt = 1/frameRateManager.targetFramesPerSecond();
+			
+			frameRateManager.frameStarted();
+			if (frameRateManager.getTotalFrames() % 50 == 0) {
+				debugText = (showFPS) ? frameRateManager.fpsDebugInfo() : null; 
+			}
+				
 			if (field!=null && canDraw) {
 				if (!setupField) {
 					field.setAspectRatio(this.getHeight()*1.0 / this.getWidth());
@@ -252,11 +261,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 					ex.printStackTrace();
 				}
 			}
-			try {
-				long sleepTime = Math.max(1, startTime + millisPerUpdate - System.currentTimeMillis());
-				Thread.sleep(sleepTime);
-			}
-			catch(InterruptedException ex) {}
+			frameRateManager.sleepUntilNextFrame();
 		}
 	}
 	
@@ -267,7 +272,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		c.drawCircle(x, y, radius, paint);
 	}
 	
-	Paint tempPaint = new Paint();
+	Paint tempPaint = new Paint(); {tempPaint.setAntiAlias(true);}
 	Random random = new Random();
 	
 	/** Draws background image, goal zones, player, and bullets.
@@ -320,6 +325,10 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 		else if (field.getDodger()!=null) {
 			drawCircleAtPosition(c, field.getDodger().getPosition(), DODGER_SCALE*this.getWidth(), dodgerPaint);			
+		}
+		
+		if (debugText!=null) {
+			c.drawText(debugText, 10, 20, dodgerPaint);
 		}
 
 		surfaceHolder.unlockCanvasAndPost(c);

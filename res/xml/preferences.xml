@@ -5,6 +5,7 @@
 
 	<CheckBoxPreference android:key="tiltControl" android:defaultValue="true" android:enabled="true" android:title="Tilt Control"></CheckBoxPreference>
 	<CheckBoxPreference android:key="flashingColors" android:enabled="true" android:title="Flashing Dots"></CheckBoxPreference>
+	<CheckBoxPreference android:key="showFPS" android:enabled="true" android:title="Show FPS"></CheckBoxPreference>
 <CheckBoxPreference android:title="Use Background Image" android:key="useBackgroundImage"></CheckBoxPreference>
 <com.dozingcatsoftware.dodge.BackgroundImagePreference 
 	android:key="selectBackgroundImage" android:title="Select Background..." android:layout="@layout/image_preference" />
