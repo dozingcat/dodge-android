@@ -17,6 +17,7 @@ public class DodgePreferences extends PreferenceActivity {
 	public static final String IMAGE_URI_KEY = "backgroundImageURI";
 	public static final String FLASHING_COLORS_KEY = "flashingColors";
 	public static final String TILT_CONTROL_KEY = "tiltControl";
+	public static final String SHOW_FPS_KEY = "showFPS";
 
 	BackgroundImagePreference selectBackgroundPref;
 	
