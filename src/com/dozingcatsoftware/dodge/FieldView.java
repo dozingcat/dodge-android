@@ -10,6 +10,7 @@ import com.dozingcatsoftware.dodge.model.Bullet;
 import com.dozingcatsoftware.dodge.model.Field;
 import com.dozingcatsoftware.dodge.model.Vec2;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,6 +26,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.Window;
+import android.view.WindowManager.LayoutParams;
 
 /** View which draws the sprites for the player and bullets, the goal areas, and the background image.
  * Extends SurfaceView for maximum performance and runs in a separate thread. The thread updates the Field
@@ -62,6 +65,12 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	
 	OrientationListener orientationListener;
 	PowerManager powerManager;
+	
+	// when user moves by tilting the device, disable screen sleep so it doesn't go off while playing
+	boolean displaySleepDisabled = false;
+	long displaySleepDisableTime;
+	boolean enableDisplaySleepScheduled = false; // set to true when draw thread has sent a message to re-enable sleep, so we only do it once
+	static long TILT_DISPLAY_ON_MILLIS = 30000; // disable display sleep for this long after move via tilting
 	
 	FrameRateManager frameRateManager = new FrameRateManager(new double[] {60, 50, 40, 30}, new double[] {58, 48, 38});
 	String debugText = null;
@@ -278,6 +287,17 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	/** Draws background image, goal zones, player, and bullets.
 	 */
 	void drawField() {
+		// check for removing flag preventing display sleep, if no recent tilt input
+		if (displaySleepDisabled && !enableDisplaySleepScheduled && System.currentTimeMillis() - displaySleepDisableTime > TILT_DISPLAY_ON_MILLIS) {
+			// clearDisableSleepFlag will execute on main thread
+			enableDisplaySleepScheduled = true;
+			messageHandler.post(new Runnable() {
+				public void run() {
+					clearDisableSleepFlag();
+				}
+			});
+		}
+		
 		Canvas c = surfaceHolder.lockCanvas(null);
 		
 		if (unscaledBackgroundBitmap!=null) {
@@ -420,7 +440,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	float lastPitch, lastRoll;
 	boolean hasInitialPitch = false;
 	float TILT_MOTION_SENSITIVITY = 0.05f; // change in radians required to to move
-	float TILT_SLEEP_SENSITIVITY = 0.01f;  // change in radians required to prevent sleep
+	float TILT_SLEEP_SENSITIVITY = 0.1f;  // change in radians required to prevent sleep
 	
 	// when user moves using the screen, trackball, or dpad, "lock" tilt motion until the device is tilted significantly
 	boolean tiltLocked = false;
@@ -437,7 +457,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 			initialPitch = lastPitch = pitch;
 			lastRoll = roll;
 			hasInitialPitch = true;
-			tiltLocked = false;
+			//tiltLocked = false;
 		}
 		else {
 			float pitchdiff = pitch - initialPitch;
@@ -446,7 +466,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 			if (Math.abs(roll) < TILT_MOTION_SENSITIVITY) roll = 0;
 			// Prevent sleeping if user is tilting to steer
 			if (Math.abs(pitch-lastPitch) > TILT_SLEEP_SENSITIVITY || Math.abs(roll-lastRoll) > TILT_SLEEP_SENSITIVITY) {
-				powerManager.userActivity(SystemClock.uptimeMillis(), true);
+				noteUserActivity();
 				lastPitch = pitch;
 				lastRoll = roll;
 			}
@@ -471,6 +491,31 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 			tiltLocked = value;
 			hasTiltLockValues = false;
 		}
+		if (tiltLocked) {
+			hasInitialPitch = false;
+		}
+	}
+
+
+	// Called when the user moves by tilting the device, to prevent the display from sleeping. 
+	void noteUserActivity() {
+		// PowerManager call doesn't seem to work on Gingerbread, so use window flags as well.
+		powerManager.userActivity(SystemClock.uptimeMillis(), true);
+
+		displaySleepDisableTime = System.currentTimeMillis();
+		if (!displaySleepDisabled) {
+			Window window = ((Activity)this.getContext()).getWindow();
+			window.addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+			displaySleepDisabled = true;
+		}
+	}
+	
+	// Called after no recent tilt movement, to allow the display to sleep
+	void clearDisableSleepFlag() {
+		Window window = ((Activity)this.getContext()).getWindow();
+		window.clearFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+		displaySleepDisabled = false;
+		enableDisplaySleepScheduled = false;
 	}
 
 	@Override
