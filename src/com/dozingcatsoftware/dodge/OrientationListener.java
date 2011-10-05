@@ -56,7 +56,8 @@ public class OrientationListener implements SensorEventListener {
 	// values used to compute orientation based on gravitational and magnetic fields
 	float[] R = new float[16];
 	float[] I = new float[16];
-	float[] mags = null;
+	// initialize magnetic field with dummy values so we can get pitch and roll even when there's no compass
+	float[] mags = new float[] {1, 0, 0};
 	float[] accels = null;
 	
 	float[] orientationValues = {0f, 0f, 0f};
