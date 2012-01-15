@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.Surface;
 
 /** Class which listens for orientation change events and delivers callback events with orientation values.
  * Getting orientation values requires reading gravitational and magnetic field values and calling a bunch of SensorManager methods
@@ -26,6 +27,7 @@ public class OrientationListener implements SensorEventListener {
 	int rate;
 	Delegate delegate;
 	SensorManager sensorManager;
+	int deviceRotation = Surface.ROTATION_0;
 	
 	/** Creates an OrientationListener with the given rate and callback delegate. Does not start listening for sensor events until start() is called.
 	 * @param context Context object, typically either an Activity or getContext() from a View 
@@ -37,6 +39,16 @@ public class OrientationListener implements SensorEventListener {
 		this.rate = rate;
 		this.delegate = delegate;
 		sensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
+	}
+	
+	/** Sets the rotation of the screen from its natural orientation, so that pitch and roll values can be properly 
+	 *  adjusted. For example, if the natural orientation of a tablet is landscape but it's being used in portrait mode,
+	 *  the rotation value should be Surface.ROTATION_90 or Surface.ROTATION_270.
+	 *  @see http://android-developers.blogspot.com/2010/09/one-screen-turn-deserves-another.html
+	 *  @param rotation one of Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180, or Surface.ROTATION_270.
+	 */
+	public void setDeviceRotation(int rotation) {
+		this.deviceRotation = rotation;
 	}
 	
 	/** Starts listening for sensor events and making callbacks to the delegate.
@@ -79,7 +91,28 @@ public class OrientationListener implements SensorEventListener {
 		if (mags!=null && accels!=null) {
 			SensorManager.getRotationMatrix(R, I, accels, mags);
 			SensorManager.getOrientation(R, orientationValues);
-			delegate.receivedOrientationValues(orientationValues[0], orientationValues[1], orientationValues[2]);
+			
+			// adjust for device rotation if needed
+			float pitch = orientationValues[1];
+			float roll = orientationValues[2];
+			switch (this.deviceRotation) {
+				case Surface.ROTATION_90:
+					float tmp1 = pitch;
+					pitch = roll;
+					roll = -tmp1;
+					break;
+				case Surface.ROTATION_180:
+					pitch = -pitch;
+					roll = -roll;
+					break;
+				case Surface.ROTATION_270:
+					float tmp2 = pitch;
+					pitch = -roll;
+					roll = tmp2;
+					break;
+			}
+					
+			delegate.receivedOrientationValues(orientationValues[0], pitch, roll);
 		}
 	}
 
