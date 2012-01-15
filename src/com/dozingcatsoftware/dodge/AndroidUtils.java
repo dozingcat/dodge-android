@@ -1,11 +1,15 @@
 package com.dozingcatsoftware.dodge;
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.Method;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.view.Display;
+import android.view.Surface;
+import android.view.WindowManager;
 
 public class AndroidUtils {
 	
@@ -33,4 +37,26 @@ public class AndroidUtils {
 		return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageURI), null, options);		
 	}
 
+	/** Returns the result of Display.getRotation, or Surface.ROTATION_0 if the getRotation method isn't available in
+	 * the current Android API.
+	 */
+	public static int getDeviceRotation(Context context) {
+		try {
+			Display display = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+			Method rotationMethod = null;
+			// look for getRotation or the deprecated getOrientation
+			for(String methodName : new String[] {"getRotation", "getOrientation"}) {
+				try {
+					rotationMethod = Display.class.getMethod(methodName);
+					break;
+				}
+				catch(Exception ignored) {}
+			}
+			if (rotationMethod!=null) {
+				return (Integer)rotationMethod.invoke(display);
+			}
+		}
+		catch(Exception ignored) {}
+		return Surface.ROTATION_0;
+	}
 }

@@ -217,6 +217,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 					handleOrientationUpdate(azimuth, pitch, roll);
 				}
 			});
+			orientationListener.setDeviceRotation(AndroidUtils.getDeviceRotation(this.getContext()));
 			orientationListener.start();
 		}
 	}
