@@ -1,0 +1,1 @@
+Dodge is a simple game where your goal is to steer a ball from one edge of the screen to the other, avoiding a swarm of enemy dots. Every time you reach the goal, the level goes up and more dots arrive.
