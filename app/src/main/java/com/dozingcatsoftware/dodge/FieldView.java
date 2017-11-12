@@ -19,8 +19,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.SensorManager;
 import android.os.Handler;
-import android.os.PowerManager;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -64,8 +62,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	boolean showFPS = false;
 	
 	OrientationListener orientationListener;
-	PowerManager powerManager;
-	
+
 	// when user moves by tilting the device, disable screen sleep so it doesn't go off while playing
 	boolean displaySleepDisabled = false;
 	long displaySleepDisableTime;
@@ -97,7 +94,6 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		dodgerPaint.setAntiAlias(true);
 		
 		setFocusable(true);
-		powerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
 	}
 	
 	public void setField(Field value) {
@@ -500,9 +496,6 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 
 	// Called when the user moves by tilting the device, to prevent the display from sleeping. 
 	void noteUserActivity() {
-		// PowerManager call doesn't seem to work on Gingerbread, so use window flags as well.
-		powerManager.userActivity(SystemClock.uptimeMillis(), true);
-
 		displaySleepDisableTime = System.currentTimeMillis();
 		if (!displaySleepDisabled) {
 			Window window = ((Activity)this.getContext()).getWindow();
