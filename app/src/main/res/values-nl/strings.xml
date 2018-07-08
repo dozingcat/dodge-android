@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="level_prefix">Niveau: </string>
+<string name="app_name">Dodge</string>
+<string name="about_text">Dodge 1.4.3\n© 2010-2012 Brian Nenninger\nwww.dozingcatsoftware.com/Dodge\n\nVerplaats je blauwe cirkel naar de groene doelzone, maar ontwijk de vijanden (stippen). Stuur door het apparaat te kantelen of door de trackball/het D-pad te gebruiken. Je kunt ook op het scherm drukken op de locatie waar je naartoe wilt. Als je de doelzone haalt, dan ga je een niveau omhoog: er komen meer stippen en het doel wordt verplaatst naar de andere zijde. In een normaal spel heb je 9 levens en in een vrij spel heb je oneindig veel levens en kun je doorgaan vanaf het hoogst bereikte niveau.\n\nGebruik de menuknop om een spel te beëindigen of ga naar de instellingen waar je kantelbesturing in of uit kunt schakelen, de stippen continue van kleur kunt laten wisselen, het aantal frames per seconden kunt tonen of een achtergrondafbeelding kunt kiezen uit je foto's.\n\nAls je bugs wilt rapporteren of feedback wilt geven, neem dan contact met me op: bnenning@gmail.com\n\nDodge is open-source: http://code.google.com/p/dodge-android\n\nAls je dit spel leuk vindt, bekijk dan ook eens WireGoggles en Vector Pinball in de Google Play Store.</string>
+<string name="level_initial">Niveau: 1</string>
+<string name="lives_prefix">Levens: </string>
+<string name="lives_initial">Levens: 9</string>
+<string name="free_play_lives">oneindig</string>
+<string name="welcome_message">Welkom bij Dodge!</string>
+<string name="game_over_message">Spel afgelopen</string>
+<string name="best_level">Hoogste niveau:</string>
+<string name="best_free_play_level">Vrij spelen-niveau:</string>
+<string name="new_record_message">Nieuw record!</string>
+<string name="continue_button_label">Doorgaan vanaf niveau {0}</string>
+<string name="score_none">Geen</string>
+<string name="end_game">Spel beëindigen</string>
+<string name="preferences">Instellingen</string>
+</resources>
