@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "com.dozingcatsoftware.dodge"
         minSdkVersion 4
-        targetSdkVersion 4
+        targetSdkVersion 31
     }
 
     buildTypes {

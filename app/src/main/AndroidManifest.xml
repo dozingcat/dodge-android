@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto"
       package="com.dozingcatsoftware.dodge"
-      android:versionName="1.4.3" android:versionCode="8">
+      android:versionName="1.5.0" android:versionCode="9">
 
     <uses-sdk android:minSdkVersion="4" />
     
-    <application android:icon="@drawable/icon" android:label="@string/app_name">
-        <activity android:name=".DodgeMain"
-                  android:label="@string/app_name"
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:isGame="true"
+        android:appCategory="game"
+        android:theme="@style/Theme.DodgeTheme" >
+
+    <activity android:name=".DodgeMain"
+                  android:exported="true"
                   android:screenOrientation="portrait"
                   android:configChanges="orientation|keyboard|keyboardHidden" >
             <intent-filter>
