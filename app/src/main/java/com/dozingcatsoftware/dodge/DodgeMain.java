@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +33,7 @@ public class DodgeMain extends Activity implements Field.Delegate {
 	
 	FieldView fieldView;
 	View menuView;
+	View pausedMenuView;
 	TextView levelText;
 	TextView livesText;
 	TextView statusText;
@@ -114,10 +116,31 @@ public class DodgeMain extends Activity implements Field.Delegate {
             }
         });
 
-        menuView = findViewById(R.id.menuView);
-        updateBestLevelFields();
-        menuView.requestFocus();
-                
+        Button preferencesButton = findViewById(R.id.preferencesButton);
+        preferencesButton.setOnClickListener(new View.OnClickListener() {
+        	public void onClick(View v) {
+        		gotoPreferences();
+			}
+		});
+
+        Button continueGameButton = findViewById(R.id.continueGameButton);
+        continueGameButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				resumeGame();
+			}
+		});
+
+		Button endGameButton = findViewById(R.id.endGameButton);
+		endGameButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				doGameOver();
+			}
+		});
+
+		menuView = findViewById(R.id.menuView);
+        pausedMenuView = findViewById(R.id.pausedMenuView);
+        showMenu();
+
         fieldView = (FieldView)findViewById(R.id.fieldView);
         fieldView.setField(field);
         fieldView.setMessageHandler(messageHandler);
@@ -134,9 +157,26 @@ public class DodgeMain extends Activity implements Field.Delegate {
     @Override
     public void onResume() {
     	super.onResume();
-    	fieldView.start();
+    	if (isGameInProgress()) {
+    		pauseGame();
+		}
+    	else {
+			fieldView.start();
+		}
     }
-    
+
+	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// When a game is in progress, pause rather than exit when the back button is pressed.
+		// This prevents accidentally quitting the game.
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (isGameInProgress() && pausedMenuView.getVisibility() != View.VISIBLE) {
+				pauseGame();
+				return true;
+			}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
     /** Called when preferences activity completes, updates background image and bullet flash settings.
      */
     void updateFromPreferences() {
@@ -173,6 +213,11 @@ public class DodgeMain extends Activity implements Field.Delegate {
     		fieldView.setBackgroundBitmap(null);
     	}
     }
+
+    private void gotoPreferences() {
+		Intent settingsActivity = new Intent(getBaseContext(), DodgePreferences.class);
+		startActivityForResult(settingsActivity, ACTIVITY_PREFERENCES);
+	}
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -186,8 +231,7 @@ public class DodgeMain extends Activity implements Field.Delegate {
     		doGameOver();
     	}
     	else if (item==preferencesMenuItem) {
-    		Intent settingsActivity = new Intent(getBaseContext(), DodgePreferences.class);
-    		startActivityForResult(settingsActivity, ACTIVITY_PREFERENCES);
+    		gotoPreferences();
     	}
     	return true;
     }
@@ -260,17 +304,51 @@ public class DodgeMain extends Activity implements Field.Delegate {
     		updateScore();
     	}
     }
+
+    boolean isGameInProgress() {
+    	return field.getDodger() != null;
+	}
+
+	void pauseGame() {
+    	fieldView.stop();
+    	showMenu();
+	}
+
+	void resumeGame() {
+    	fieldView.start();
+    	hideMenu();
+	}
+
+    void showMenu() {
+    	if (isGameInProgress()) {
+    		field.stop();
+    		menuView.setVisibility(View.GONE);
+    		pausedMenuView.setVisibility(View.VISIBLE);
+    		pausedMenuView.requestFocus();
+		}
+    	else {
+			updateBestLevelFields();
+			menuView.setVisibility(View.VISIBLE);
+			pausedMenuView.setVisibility(View.GONE);
+			menuView.requestFocus();
+		}
+	}
+
+	void hideMenu() {
+		menuView.setVisibility(View.GONE);
+		pausedMenuView.setVisibility(View.GONE);
+	}
     
     void updateScore() {
-		levelText.setText(getString(R.string.level_prefix) + levelManager.getCurrentLevel());
-		livesText.setText(getString(R.string.lives_prefix)+((lives>=0) ? ""+lives : getString(R.string.free_play_lives)));
+		levelText.setText(getString(R.string.level_prefix) + " " + levelManager.getCurrentLevel());
+		livesText.setText(getString(R.string.lives_prefix) + " " + ((lives>=0) ? ""+lives : getString(R.string.free_play_lives)));
     }
     
     void doGameOver() {
     	field.removeDodger();
+    	fieldView.start();
     	statusText.setText(getString(R.string.game_over_message));
-    	updateBestLevelFields();
-    	menuView.setVisibility(View.VISIBLE);
+    	showMenu();
     }
     
     void startGameAtLevelWithLives(int startLevel, int numLives) {

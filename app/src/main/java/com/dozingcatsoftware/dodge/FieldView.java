@@ -20,11 +20,13 @@ import android.graphics.RectF;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
 /** View which draws the sprites for the player and bullets, the goal areas, and the background image.
@@ -92,7 +94,13 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		dodgerPaint = new Paint();
 		dodgerPaint.setARGB(255, 0, 0, 255);
 		dodgerPaint.setAntiAlias(true);
-		
+		// setTextSize uses absolute pixels, get screen density to scale.
+		DisplayMetrics metrics = new DisplayMetrics();
+		WindowManager windowManager =
+				(WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		windowManager.getDefaultDisplay().getMetrics(metrics);
+		dodgerPaint.setTextSize(9 * metrics.density);
+
 		setFocusable(true);
 	}
 	
@@ -180,6 +188,9 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	/** Starts the game thread which continuously updates the state of the objects and draws to the view.
 	 */
 	public void start() {
+		if (running) {
+			return;
+		}
 		running = true;
 		gameThread = new Thread() {
 			public void run() {
@@ -196,6 +207,9 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	/** Stops the game thread, which will pause updates to the game state and view redraws.
 	 */
 	public void stop() {
+		if (!running) {
+			return;
+		}
 		running = false;
 		stopOrientationListener();
 		try {
@@ -204,7 +218,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		catch(InterruptedException ex) {}
 		frameRateManager.clearTimestamps();
 	}
-	
+
 	void startOrientationListener() {
 		setTiltLocked(false);
 		if (orientationListener==null) {
@@ -247,7 +261,8 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 			
 			frameRateManager.frameStarted();
 			if (frameRateManager.getTotalFrames() % 50 == 0) {
-				debugText = (showFPS) ? frameRateManager.fpsDebugInfo() : null; 
+				debugText = (showFPS) ?
+						frameRateManager.formattedCurrentFramesPerSecond() + " fps" : null;
 			}
 				
 			if (field!=null && canDraw) {
@@ -345,7 +360,8 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 		
 		if (debugText!=null) {
-			c.drawText(debugText, 10, 20, dodgerPaint);
+			float fontSize = dodgerPaint.getTextSize();
+			c.drawText(debugText, fontSize * 0.5f, fontSize * 1.5f, dodgerPaint);
 		}
 
 		surfaceHolder.unlockCanvasAndPost(c);

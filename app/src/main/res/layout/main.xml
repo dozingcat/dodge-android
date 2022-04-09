@@ -10,36 +10,80 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     
-    <com.dozingcatsoftware.dodge.FieldView
-      android:id="@+id/fieldView"
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:layout_weight="1"/>
-      
-      <LinearLayout 
-      	android:orientation="horizontal"
-      	android:layout_width="fill_parent"
-      	android:layout_height="wrap_content"
-      	android:layout_weight="1">
+      <LinearLayout
+      	  android:orientation="horizontal"
+      	  android:layout_width="fill_parent"
+      	  android:layout_height="wrap_content"
+      	  android:layout_weight="1">
       	
         <TextView
             android:text="@string/level_initial"
             android:id="@+id/levelText"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
+            android:gravity="center"
             android:includeFontPadding="true"
-            android:lines="2"
-            android:layout_weight="1"/>
+            android:lines="3"
+            android:layout_weight="1" />
         
         <TextView
             android:text="@string/lives_initial"
             android:id="@+id/livesText"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
+            android:gravity="center"
             android:includeFontPadding="true"
-            android:lines="2"
-            android:layout_weight="1"/>
+            android:lines="3"
+            android:layout_weight="1" />
       </LinearLayout>
+
+      <com.dozingcatsoftware.dodge.FieldView
+          android:id="@+id/fieldView"
+          android:layout_width="fill_parent"
+          android:layout_height="fill_parent"
+          android:layout_weight="1" />
+
+</LinearLayout>
+
+<LinearLayout
+    android:id="@+id/pausedMenuView"
+    android:visibility="gone"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#8448"
+        android:padding="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="Game paused"
+            android:textSize="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp" />
+
+        <Button
+            android:id="@+id/continueGameButton"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="3dp"
+            android:layout_margin="3dp"
+            android:text="Continue" />
+
+        <Button
+            android:id="@+id/endGameButton"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="3dp"
+            android:layout_margin="3dp"
+            android:text="End Game" />
+    </LinearLayout>
 </LinearLayout>
 
 <LinearLayout
@@ -53,44 +97,50 @@
       android:orientation="vertical"
       android:gravity="center"
       android:background="#8448"
-      android:padding="5px"
+      android:padding="10dp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content">
-      
+
     <TextView
         android:id="@+id/statusText"
         android:text="Welcome to Dodge!"
+        android:textSize="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="5px" />
+        android:padding="5dp" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="5px">
-    
         <Button
             android:id="@+id/newGameButton"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:padding="3dp"
+            android:layout_margin="3dp"
             android:text="New Game" />
     
         <Button
             android:id="@+id/freePlayButton"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:padding="3dp"
+            android:layout_margin="3dp"
             android:text="Free Play" />
     
         <Button
             android:id="@+id/aboutButton"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:padding="3dp"
+            android:layout_margin="3dp"
             android:text="Help/About" />
-    
-    </LinearLayout>
-    
+
+        <Button
+            android:id="@+id/preferencesButton"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="3dp"
+            android:layout_margin="3dp"
+            android:text="Preferences" />
+
     <TableLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
@@ -100,22 +150,24 @@
         	    android:text="@string/best_level" 
         	    android:gravity="right" />        	
         	<TextView 
-        	    android:id="@+id/bestLevelText" />        	
+        	    android:id="@+id/bestLevelText"
+                android:paddingStart="4sp" />
         </TableRow>
         <TableRow android:id="@+id/bestFreePlayLevelView">
         	<TextView
         	    android:text="@string/best_free_play_level"
         	    android:gravity="right" />    	
         	<TextView 
-        	    android:id="@+id/bestFreePlayLevelText" />        	
+        	    android:id="@+id/bestFreePlayLevelText"
+                android:paddingStart="4sp" />
         </TableRow>
     </TableLayout>
     
     <Button
         android:id="@+id/continueFreePlayButton"
         android:text="Continue Free Play"
-        android:gravity="center" 
-        android:layout_width="wrap_content" 
+        android:gravity="center"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     
   </LinearLayout>
