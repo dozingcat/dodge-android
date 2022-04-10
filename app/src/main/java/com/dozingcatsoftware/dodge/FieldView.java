@@ -154,7 +154,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 			else if (imageRatio<viewRatio) {
 				// image is too tall, crop from top/bottom
 				int croppedHeight = (int)(bw / viewRatio);
-				srcRect.top = bw/2 - croppedHeight/2;
+				srcRect.top = bh/2 - croppedHeight/2;
 				srcRect.bottom = srcRect.top + croppedHeight;
 			}
 			Bitmap newBitmap = Bitmap.createBitmap(vw, vh, Bitmap.Config.ARGB_8888);

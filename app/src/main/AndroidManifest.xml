@@ -6,7 +6,7 @@
     <uses-sdk android:minSdkVersion="4" />
     
     <application
-        android:icon="@drawable/icon"
+        android:icon="@mipmap/icon"
         android:label="@string/app_name"
         android:isGame="true"
         android:appCategory="game"

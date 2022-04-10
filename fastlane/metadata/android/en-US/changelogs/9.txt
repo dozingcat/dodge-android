@@ -1,0 +1,3 @@
+- Added Preferences button.
+- Game pauses when back button is pressed or when restored from home screen.
+- Improved UI and icon.
