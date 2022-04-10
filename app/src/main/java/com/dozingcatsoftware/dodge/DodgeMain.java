@@ -159,6 +159,13 @@ public class DodgeMain extends Activity implements Field.Delegate {
     	super.onResume();
     	if (isGameInProgress()) {
     		pauseGame();
+            // We can't draw immediately because the FieldView won't be able to lock its canvas.
+            // Drawing after a short delay seems to be fine.
+            messageHandler.postDelayed(new Runnable() {
+                public void run() {
+                    fieldView.drawField();
+                }
+            }, 50);
 		}
     	else {
 			fieldView.start();

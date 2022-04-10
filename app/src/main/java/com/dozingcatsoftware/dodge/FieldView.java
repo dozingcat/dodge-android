@@ -298,7 +298,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	
 	/** Draws background image, goal zones, player, and bullets.
 	 */
-	void drawField() {
+	public void drawField() {
 		// check for removing flag preventing display sleep, if no recent tilt input
 		if (displaySleepDisabled && !enableDisplaySleepScheduled && System.currentTimeMillis() - displaySleepDisableTime > TILT_DISPLAY_ON_MILLIS) {
 			// clearDisableSleepFlag will execute on main thread
@@ -311,6 +311,9 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 		
 		Canvas c = surfaceHolder.lockCanvas(null);
+		if (c == null) {
+			return;
+		}
 		
 		if (unscaledBackgroundBitmap!=null) {
 			// ok to call this from a secondary thread?
