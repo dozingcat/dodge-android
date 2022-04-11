@@ -43,24 +43,29 @@ public class DodgePreferences extends PreferenceActivity {
 	
 	@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) { 
-        super.onActivityResult(requestCode, resultCode, intent); 
+        super.onActivityResult(requestCode, resultCode, intent);
 
-        switch(requestCode) { 
+        switch(requestCode) {
             case ACTIVITY_SELECT_IMAGE:
-            	if (resultCode == RESULT_OK) {
-            		// retrieve selected image URI and make sure image background is enabled
+                if (resultCode == RESULT_OK) {
+                    // retrieve selected image URI and make sure image background is enabled
                     Uri imageURI = intent.getData();
-                	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                	SharedPreferences.Editor editor = prefs.edit();
-                	editor.putString(IMAGE_URI_KEY, imageURI.toString());
-                	editor.commit();
-                	
-                	CheckBoxPreference useImagePref = (CheckBoxPreference)findPreference("useBackgroundImage");
-                	useImagePref.setChecked(true);
-                	
-                	selectBackgroundPref.updateBackgroundImage();
-            	}
-            	break;
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                    SharedPreferences.Editor editor = prefs.edit();
+                    // FIXME: This doesn't persist the image correctly. In modern Android versions,
+                    // the URL will be something like `content://media/external/images/media/18`,
+                    // and the app will only have access to it until it exits; when it launches next
+                    // time it won't be able to read it. A better way would be to copy the image to
+                    // a location that will always be accessible, e.g. `Context.getFilesDir`.
+                    editor.putString(IMAGE_URI_KEY, imageURI.toString());
+                    editor.commit();
+
+                    CheckBoxPreference useImagePref = (CheckBoxPreference)findPreference("useBackgroundImage");
+                    useImagePref.setChecked(true);
+
+                    selectBackgroundPref.updateBackgroundImage();
+                }
+                break;
         }
     }
     
