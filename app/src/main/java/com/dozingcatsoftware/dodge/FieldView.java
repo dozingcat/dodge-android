@@ -99,7 +99,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 		WindowManager windowManager =
 				(WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		windowManager.getDefaultDisplay().getMetrics(metrics);
-		dodgerPaint.setTextSize(9 * metrics.density);
+		dodgerPaint.setTextSize(12 * metrics.density);
 
 		setFocusable(true);
 	}
@@ -119,6 +119,7 @@ public class FieldView extends SurfaceView implements SurfaceHolder.Callback {
 	 * aspect ratio is wider than the view's. A null argument will remove any existing background image.
 	 */
 	public synchronized void setBackgroundBitmap(Bitmap value) {
+	    frameRateManager.resetFrameRate();
 		if (value==null) {
 			backgroundBitmap = null;
 		}
