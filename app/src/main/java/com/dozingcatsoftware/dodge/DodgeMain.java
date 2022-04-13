@@ -1,5 +1,6 @@
 package com.dozingcatsoftware.dodge;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -198,27 +199,24 @@ public class DodgeMain extends Activity implements Field.Delegate {
     	fieldView.setShowFPS(showFPS);
 
     	Bitmap backgroundBitmap = null;
-    	String backgroundImage = prefs.getString(DodgePreferences.IMAGE_URI_KEY, null);
-    	if (prefs.getBoolean("useBackgroundImage",false)==true) {
-        	if (backgroundImage!=null && prefs.getBoolean(DodgePreferences.USE_BACKGROUND_KEY,false)==true) {
-        		try {
-        			Uri imageURI = Uri.parse(backgroundImage);
-        	    	// Load image scaled to the screen size (the FieldView size would be better but it's not available in onCreate)
-        			WindowManager windowManager = (WindowManager)this.getSystemService(Context.WINDOW_SERVICE);
-        			Display display = windowManager.getDefaultDisplay();
-        			
-        			backgroundBitmap = AndroidUtils.scaledBitmapFromURIWithMinimumSize(this, imageURI, display.getWidth(), display.getHeight());
-        			fieldView.setBackgroundBitmap(backgroundBitmap);
-        		}
-        		catch(Throwable ex) {
-        			// we shouldn't get out of memory errors, but it's possible with weird images
-        			backgroundBitmap = null;
-        		}
-        	}
+    	if (prefs.getBoolean(DodgePreferences.USE_BACKGROUND_KEY,false)) {
+            try {
+                File backgroundImageFile = getFileStreamPath(DodgePreferences.BACKGROUND_IMAGE_FILENAME);
+                if (backgroundImageFile.isFile()) {
+                    // Load image scaled to the screen size (the FieldView size would be better but it's not available in onCreate)
+                    WindowManager windowManager = (WindowManager)this.getSystemService(Context.WINDOW_SERVICE);
+                    Display display = windowManager.getDefaultDisplay();
+
+                    backgroundBitmap = AndroidUtils.scaledBitmapFromFileWithMinimumSize(backgroundImageFile, display.getWidth(), display.getHeight());
+                }
+            }
+            catch(Throwable ex) {
+                // we shouldn't get out of memory errors, but it's possible with weird images
+                android.util.Log.i("DodgeMain", "Failed to read background image", ex);
+                backgroundBitmap = null;
+            }
     	}
-    	else {
-    		fieldView.setBackgroundBitmap(null);
-    	}
+		fieldView.setBackgroundBitmap(backgroundBitmap);
     }
 
     private void gotoPreferences() {

@@ -10,6 +10,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.io.File;
+
 /** Custom preference item that allows the user to select a background image for the field view, and shows
  * the image on the preferences screen. DodgePreferences handles the touch event to select an image, and 
  * this class updates the ImageView which displays the image.
@@ -38,12 +40,14 @@ public class BackgroundImagePreference extends Preference {
 	void updateBackgroundImage() {
     	if (imageView!=null) {
     		Bitmap bitmap = null;
-        	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-    		String imageURIString = prefs.getString(DodgePreferences.IMAGE_URI_KEY, null);
-    		if (imageURIString!=null) {
-    			Uri imageURI = Uri.parse(imageURIString);
+            File backgroundImageFile =
+                    getContext().getFileStreamPath(DodgePreferences.BACKGROUND_IMAGE_FILENAME);
+    		if (backgroundImageFile.exists()) {
     			try {
-    				bitmap = AndroidUtils.scaledBitmapFromURIWithMinimumSize(getContext(), imageURI, Math.max(128, imageView.getWidth()), Math.max(128, imageView.getHeight()));
+    				bitmap = AndroidUtils.scaledBitmapFromFileWithMinimumSize(
+    				        backgroundImageFile,
+                            Math.max(128, imageView.getWidth()),
+                            Math.max(128, imageView.getHeight()));
     			}
     			catch(Exception ignored) {}
     		}

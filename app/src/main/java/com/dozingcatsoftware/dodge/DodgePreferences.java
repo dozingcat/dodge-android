@@ -1,5 +1,6 @@
 package com.dozingcatsoftware.dodge;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -8,13 +9,18 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class DodgePreferences extends PreferenceActivity {
 	
 	private static final int ACTIVITY_SELECT_IMAGE = 1;
 	
 	public static final String USE_BACKGROUND_KEY = "useBackgroundImage";
-	public static final String IMAGE_URI_KEY = "backgroundImageURI";
+	public static final String BACKGROUND_IMAGE_FILENAME = "background_image";
 	public static final String FLASHING_COLORS_KEY = "flashingColors";
 	public static final String TILT_CONTROL_KEY = "tiltControl";
 	public static final String SHOW_FPS_KEY = "showFPS";
@@ -49,20 +55,31 @@ public class DodgePreferences extends PreferenceActivity {
             case ACTIVITY_SELECT_IMAGE:
                 if (resultCode == RESULT_OK) {
                     // retrieve selected image URI and make sure image background is enabled
-                    Uri imageURI = intent.getData();
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                    SharedPreferences.Editor editor = prefs.edit();
-                    // FIXME: This doesn't persist the image correctly. In modern Android versions,
-                    // the URL will be something like `content://media/external/images/media/18`,
-                    // and the app will only have access to it until it exits; when it launches next
-                    // time it won't be able to read it. A better way would be to copy the image to
-                    // a location that will always be accessible, e.g. `Context.getFilesDir`.
-                    editor.putString(IMAGE_URI_KEY, imageURI.toString());
-                    editor.commit();
+                    Uri imageUri = intent.getData();
+                    // imageUri is likely to be a "content" URI which for which we only have
+                    // temporary access. We need to copy the file to private storage in order to
+                    // read it later.
+                    try {
+                        OutputStream output = openFileOutput(
+                                DodgePreferences.BACKGROUND_IMAGE_FILENAME, Context.MODE_PRIVATE);
+                        InputStream input = getContentResolver().openInputStream(imageUri);
+                        byte[] buffer = new byte[32768];
+                        int bytesRead;
+                        long totalBytes = 0;
+                        while ((bytesRead = input.read(buffer)) > 0) {
+                            output.write(buffer, 0, bytesRead);
+                            totalBytes += bytesRead;
+                        }
+                        output.close();
+                        Log.i("DodgePreferences",
+                                "Successfully wrote background image, size: " + totalBytes);
+                    }
+                    catch (Exception ex) {
+                        Log.i("DodgePreferences", "Error writing background image: ", ex);
+                    }
 
                     CheckBoxPreference useImagePref = (CheckBoxPreference)findPreference("useBackgroundImage");
                     useImagePref.setChecked(true);
-
                     selectBackgroundPref.updateBackgroundImage();
                 }
                 break;
