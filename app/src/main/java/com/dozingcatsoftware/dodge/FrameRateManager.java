@@ -186,6 +186,9 @@ public class FrameRateManager {
 	 * nanosToWaitUntilNextFrame(), which calls this method with an argument of System.nanoTime().
 	 */
 	public long nanosToWaitUntilNextFrame(long time) {
+	    if (previousFrameTimestamps.isEmpty()) {
+	        return MILLION;
+        }
 		long lastStartTime = previousFrameTimestamps.getLast();
 		long singleFrameGoalTime = lastStartTime + currentNanosPerFrame;
 		long waitTime = singleFrameGoalTime - time;
